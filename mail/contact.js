@@ -1,65 +1,43 @@
-$(function () {
-
-    $("#contactForm input, #contactForm textarea").jqBootstrapValidation({
-        preventSubmit: true,
-        submitError: function ($form, event, errors) {
-        },
-        submitSuccess: function ($form, event) {
-            event.preventDefault();
-            var name = $("input#name").val();
-            var email = $("input#email").val();
-            var subject = $("input#subject").val();
-            var message = $("textarea#message").val();
-
-            $this = $("#sendMessageButton");
-            $this.prop("disabled", true);
-
-            $.ajax({
-                url: "contact.php",
-                type: "POST",
-                data: {
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message
-                },
-                cache: false,
-                success: function () {
-                    $('#success').html("<div class='alert alert-success'>");
-                    $('#success > .alert-success').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                            .append("</button>");
-                    $('#success > .alert-success')
-                            .append("<strong>Your message has been sent. </strong>");
-                    $('#success > .alert-success')
-                            .append('</div>');
-                    $('#contactForm').trigger("reset");
-                },
-                error: function () {
-                    $('#success').html("<div class='alert alert-danger'>");
-                    $('#success > .alert-danger').html("<button type='button' class='close' data-dismiss='alert' aria-hidden='true'>&times;")
-                            .append("</button>");
-                    $('#success > .alert-danger').append($("<strong>").text("Sorry " + name + ", it seems that our mail server is not responding. Please try again later!"));
-                    $('#success > .alert-danger').append('</div>');
-                    $('#contactForm').trigger("reset");
-                },
-                complete: function () {
-                    setTimeout(function () {
-                        $this.prop("disabled", false);
-                    }, 1000);
-                }
-            });
-        },
-        filter: function () {
-            return $(this).is(":visible");
-        },
-    });
-
-    $("a[data-toggle=\"tab\"]").click(function (e) {
-        e.preventDefault();
-        $(this).tab("show");
-    });
+// Initialize EmailJS
+document.addEventListener("DOMContentLoaded", function () {
+    emailjs.init("gdnzc-zy7bEsjaThD"); // Replace with your actual EmailJS Public Key
 });
 
-$('#name').focus(function () {
-    $('#success').html('');
+// Function to send email
+function sendEmail(event) {
+    event.preventDefault(); // Prevent default form submission
+
+    // Collect form values
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email").value;
+    const subject = document.getElementById("subject").value;
+    const message = document.getElementById("message").value;
+
+    // Ensure fields are not empty (basic validation)
+    if (!name || !email || !subject || !message) {
+        alert("Please fill in all the fields.");
+        return;
+    }
+
+    // Send email using EmailJS
+    emailjs.send("service_6egrbf7", "template_csevppw", {
+        from_name: name,
+        from_email: email,
+        subject: subject,
+        message: message
+    })
+    .then(response => {
+        alert("Message sent successfully!");
+        console.log("SUCCESS!", response);
+        document.getElementById("contactForm").reset(); // Reset form after successful submission
+    })
+    .catch(error => {
+        alert("Failed to send message!");
+        console.error("FAILED...", error);
+    });
+}
+
+// Attach event listener to the form
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("contactForm").addEventListener("submit", sendEmail);
 });
